@@ -23,7 +23,8 @@ class MailerService{
         ->to($user->getUsername())
         ->subject($object)
         ->html($this->twig->render("mail/index.html.twig",[
-            "user"=>$user
+            "user"=>$user,
+            "token"=>$user->getToken(),
         ]));
         $this->mailer->send($emails);
 

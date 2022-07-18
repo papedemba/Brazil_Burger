@@ -12,34 +12,68 @@ use Doctrine\ORM\Mapping as ORM;
 #[ApiResource]
 class Boisson extends Produit
 {
-    #[ORM\ManyToMany(targetEntity: Taille::class, inversedBy: 'boissons')]
-    private $tailles;
+    #[ORM\OneToMany(mappedBy: 'boisson', targetEntity: BoissonTaille::class)]
+    private $boissonTailles;
+
+    // #[ORM\ManyToMany(targetEntity: Taille::class, inversedBy: 'boissons')]
+    // private $tailles;
 
     public function __construct()
     {
-        $this->tailles = new ArrayCollection();
+        // $this->tailles = new ArrayCollection();
+        $this->boissonTailles = new ArrayCollection();
     }
+
+    // /**
+    //  * @return Collection<int, Taille>
+    //  */
+    // public function getTailles(): Collection
+    // {
+    //     return $this->tailles;
+    // }
+
+    // public function addTaille(Taille $taille): self
+    // {
+    //     if (!$this->tailles->contains($taille)) {
+    //         $this->tailles[] = $taille;
+    //     }
+
+    //     return $this;
+    // }
+
+    // public function removeTaille(Taille $taille): self
+    // {
+    //     $this->tailles->removeElement($taille);
+
+    //     return $this;
+    // }
 
     /**
-     * @return Collection<int, Taille>
+     * @return Collection<int, BoissonTaille>
      */
-    public function getTailles(): Collection
+    public function getBoissonTailles(): Collection
     {
-        return $this->tailles;
+        return $this->boissonTailles;
     }
 
-    public function addTaille(Taille $taille): self
+    public function addBoissonTaille(BoissonTaille $boissonTaille): self
     {
-        if (!$this->tailles->contains($taille)) {
-            $this->tailles[] = $taille;
+        if (!$this->boissonTailles->contains($boissonTaille)) {
+            $this->boissonTailles[] = $boissonTaille;
+            $boissonTaille->setBoisson($this);
         }
 
         return $this;
     }
 
-    public function removeTaille(Taille $taille): self
+    public function removeBoissonTaille(BoissonTaille $boissonTaille): self
     {
-        $this->tailles->removeElement($taille);
+        if ($this->boissonTailles->removeElement($boissonTaille)) {
+            // set the owning side to null (unless already changed)
+            if ($boissonTaille->getBoisson() === $this) {
+                $boissonTaille->setBoisson(null);
+            }
+        }
 
         return $this;
     }

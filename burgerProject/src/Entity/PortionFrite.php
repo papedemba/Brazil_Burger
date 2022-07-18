@@ -9,14 +9,18 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: PortionFriteRepository::class)]
-#[ApiResource]
+#[ApiResource(collectionOperations:[
+    "get",
+    "post"=>[
+        'denormalization_context' => ['groups' => ['portion:read:all']]
+]]
+)]
 class PortionFrite extends Produit
-{
+{   
     #[ORM\ManyToMany(targetEntity: Menu::class, mappedBy: 'portionFrites')]
     private $menus;
 
-    #[ORM\OneToMany(mappedBy: 'portionFrite', targetEntity: Complements::class)]
-    private $complements;
+    
 
     public function __construct()
     {
@@ -51,33 +55,14 @@ class PortionFrite extends Produit
         return $this;
     }
 
-    /**
-     * @return Collection<int, Complements>
-     */
-    public function getComplements(): Collection
-    {
-        return $this->complements;
-    }
+    
+    
+    
 
-    public function addComplement(Complements $complement): self
-    {
-        if (!$this->complements->contains($complement)) {
-            $this->complements[] = $complement;
-            $complement->setPortionFrite($this);
-        }
+    
 
-        return $this;
-    }
+        
+   
 
-    public function removeComplement(Complements $complement): self
-    {
-        if ($this->complements->removeElement($complement)) {
-            // set the owning side to null (unless already changed)
-            if ($complement->getPortionFrite() === $this) {
-                $complement->setPortionFrite(null);
-            }
-        }
-
-        return $this;
-    }
+    
 }

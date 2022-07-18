@@ -4,8 +4,13 @@ namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\ProduitRepository;
+use Doctrine\Common\Collections\Collection;
 use ApiPlatform\Core\Annotation\ApiResource;
+use phpDocumentor\Reflection\Types\Nullable;
+use Symfony\Component\HttpFoundation\File\File;
+use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Vich\UploaderBundle\Mapping\Annotation\UploadableField;
 
 #[ORM\Entity(repositoryClass: ProduitRepository::class)]
 #[ApiResource]
@@ -14,26 +19,45 @@ use Symfony\Component\Serializer\Annotation\Groups;
 #[ORM\DiscriminatorMap(["produit" => "Produit", "menu" => "Menu","burger"=>"Burger","portionfrite"=>"PortionFrite","boisson"=>"Boisson"])]
 class Produit
 {
-    #[Groups(["burger:read:simple","burger:read:all"])]
     #[ORM\Id]
-    #[ORM\GeneratedValue]
+    #[ORM\GeneratedValue] 
+
+    #[Groups(["burger:read:simple","burger:read:all",'complement:read:all','menu:read:all','Commande:read:simple','Commande:read:simple','burger:write'])]
+
     #[ORM\Column(type: 'integer')]
     private $id;
-    #[Groups(["burger:read:simple","burger:read:all"])]
 
+    #[Groups(["burger:read:simple","burger:read:all",'complement:read:all','menu:read:all','portion:read:all','burger:write:simple','Commande:read:simple','burger:write'])]
     #[ORM\Column(type: 'string', length: 255)]
     private $nom;
-    #[Groups(["burger:read:simple"])]
 
-    #[ORM\Column(type: 'float')]
+    #[Groups(["burger:read:simple",'complement:read:all','portion:read:all','burger:write:simple','burger:write'])]
+    #[ORM\Column(type: 'float',nullable:true)]
     private $prix;
 
-    #[ORM\Column(type: 'object')]
-    private $image;
     #[Groups(["burger:read:all"])]
+    
 
-    #[ORM\Column(type: 'boolean')]
+    #[ORM\Column(type: 'boolean',nullable:true)]
     private $isEtat;
+
+    // #[ORM\OneToMany(mappedBy: 'produit', targetEntity: ProduitCommande::class,cascade:["persist"])]
+    private $produitCommandes;
+
+    #[Groups(['burger:write:simple','burger:write'])]
+    #[ORM\Column(type: 'blob', nullable: true)]
+    private $img;
+
+    #[UploadableField(mapping:"media_object", fileNameProperty:"filePath")]
+     
+    #[Groups(["burger:write:simple",'menu:read:all'])]
+
+    public ?File $file = null;
+
+    public function __construct()
+    {
+        // $this->produitCommandes = new ArrayCollection();
+    }
 
    
 
@@ -66,18 +90,6 @@ class Produit
         return $this;
     }
 
-    public function getImage(): ?object
-    {
-        return $this->image;
-    }
-
-    public function setImage(object $image): self
-    {
-        $this->image = $image;
-
-        return $this;
-    }
-
     public function isIsEtat(): ?bool
     {
         return $this->isEtat;
@@ -86,6 +98,45 @@ class Produit
     public function setIsEtat(bool $isEtat): self
     {
         $this->isEtat = $isEtat;
+
+        return $this;
+    }
+
+    
+
+    public function getImg()
+
+    {
+        $img=$this->img;
+
+        // dd($img);
+        if (is_resource($img)) {
+            return base64_encode(stream_get_contents($img));
+        }elseif ($img) {
+            return base64_encode($img);
+        }
+        return null;
+    }
+
+    public function setImg($img): self
+    {
+        $this->img = $img;
+
+        return $this;
+    }
+    public function getFile()
+    {
+        return $this->file;
+    }
+
+    /**
+     * Set the value of file
+     *
+     * @return  self
+     */ 
+    public function setFile($file)
+    {
+        $this->file = $file;
 
         return $this;
     }

@@ -2,11 +2,12 @@
 
 namespace App\Entity;
 
-use ApiPlatform\Core\Annotation\ApiResource;
-use App\Repository\TailleRepository;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use App\Repository\TailleRepository;
+use Doctrine\Common\Collections\Collection;
+use ApiPlatform\Core\Annotation\ApiResource;
+use Doctrine\Common\Collections\ArrayCollection;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: TailleRepository::class)]
 #[ApiResource]
@@ -15,29 +16,38 @@ class Taille
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
+    
+    #[Groups(['complement:read:all','menu:read:all','Commande:read:simple'])]  
     private $id;
-
+    #[Groups(['complement:read:all','menu:read:all','Commande:read:simple'])]
     #[ORM\Column(type: 'string', length: 255)]
     private $libelle;
 
     #[ORM\Column(type: 'float', nullable: true)]
     private $prix;
 
+    #[ORM\OneToMany(mappedBy: 'taille', targetEntity: MenuTaille::class)]
+    private $menuTailles;
 
-    #[ORM\ManyToMany(targetEntity: Menu::class, mappedBy: 'tailles')]
-    private $menus;
+    #[ORM\OneToMany(mappedBy: 'taille', targetEntity: BoissonTaille::class)]
+    private $boissonTailles;
 
-    #[ORM\OneToMany(mappedBy: 'taille', targetEntity: Complements::class)]
-    private $complements;
 
-    #[ORM\ManyToMany(targetEntity: Boisson::class, mappedBy: 'tailles')]
-    private $boissons;
+    // #[ORM\ManyToMany(targetEntity: Menu::class, mappedBy: 'tailles')]
+    // private $menus;
+
+   
+
+    // #[ORM\ManyToMany(targetEntity: Boisson::class, mappedBy: 'tailles')]
+    // private $boissons;
 
     public function __construct()
     {
-        $this->menus = new ArrayCollection();
+        // $this->menus = new ArrayCollection();
         $this->complements = new ArrayCollection();
-        $this->boissons = new ArrayCollection();
+        // $this->boissons = new ArrayCollection();
+        $this->menuTailles = new ArrayCollection();
+        $this->boissonTailles = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -70,57 +80,89 @@ class Taille
     }
 
    
+    // /**
+    //  * @return Collection<int, Menu>
+    //  */
+    // public function getMenus(): Collection
+    // {
+    //     return $this->menus;
+    // }
+
+    // public function addMenu(Menu $menu): self
+    // {
+    //     if (!$this->menus->contains($menu)) {
+    //         $this->menus[] = $menu;
+    //         $menu->addTaille($this);
+    //     }
+
+    //     return $this;
+    // }
+
+    // public function removeMenu(Menu $menu): self
+    // {
+    //     if ($this->menus->removeElement($menu)) {
+    //         $menu->removeTaille($this);
+    //     }
+
+    //     return $this;
+    // }
+
+   
+    
+
+    
+
+    // /**
+    //  * @return Collection<int, Boisson>
+    //  */
+    // public function getBoissons(): Collection
+    // {
+    //     return $this->boissons;
+    // }
+
+    // public function addBoisson(Boisson $boisson): self
+    // {
+    //     if (!$this->boissons->contains($boisson)) {
+    //         $this->boissons[] = $boisson;
+    //         $boisson->addTaille($this);
+    //     }
+
+    //     return $this;
+    // }
+
+    // public function removeBoisson(Boisson $boisson): self
+    // {
+    //     if ($this->boissons->removeElement($boisson)) {
+    //         $boisson->removeTaille($this);
+    //     }
+
+    //     return $this;
+    // }
+
     /**
-     * @return Collection<int, Menu>
+     * @return Collection<int, MenuTaille>
      */
-    public function getMenus(): Collection
+    public function getMenuTailles(): Collection
     {
-        return $this->menus;
+        return $this->menuTailles;
     }
 
-    public function addMenu(Menu $menu): self
+    public function addMenuTaille(MenuTaille $menuTaille): self
     {
-        if (!$this->menus->contains($menu)) {
-            $this->menus[] = $menu;
-            $menu->addTaille($this);
+        if (!$this->menuTailles->contains($menuTaille)) {
+            $this->menuTailles[] = $menuTaille;
+            $menuTaille->setTaille($this);
         }
 
         return $this;
     }
 
-    public function removeMenu(Menu $menu): self
+    public function removeMenuTaille(MenuTaille $menuTaille): self
     {
-        if ($this->menus->removeElement($menu)) {
-            $menu->removeTaille($this);
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, Complements>
-     */
-    public function getComplements(): Collection
-    {
-        return $this->complements;
-    }
-
-    public function addComplement(Complements $complement): self
-    {
-        if (!$this->complements->contains($complement)) {
-            $this->complements[] = $complement;
-            $complement->setTaille($this);
-        }
-
-        return $this;
-    }
-
-    public function removeComplement(Complements $complement): self
-    {
-        if ($this->complements->removeElement($complement)) {
+        if ($this->menuTailles->removeElement($menuTaille)) {
             // set the owning side to null (unless already changed)
-            if ($complement->getTaille() === $this) {
-                $complement->setTaille(null);
+            if ($menuTaille->getTaille() === $this) {
+                $menuTaille->setTaille(null);
             }
         }
 
@@ -128,27 +170,30 @@ class Taille
     }
 
     /**
-     * @return Collection<int, Boisson>
+     * @return Collection<int, BoissonTaille>
      */
-    public function getBoissons(): Collection
+    public function getBoissonTailles(): Collection
     {
-        return $this->boissons;
+        return $this->boissonTailles;
     }
 
-    public function addBoisson(Boisson $boisson): self
+    public function addBoissonTaille(BoissonTaille $boissonTaille): self
     {
-        if (!$this->boissons->contains($boisson)) {
-            $this->boissons[] = $boisson;
-            $boisson->addTaille($this);
+        if (!$this->boissonTailles->contains($boissonTaille)) {
+            $this->boissonTailles[] = $boissonTaille;
+            $boissonTaille->setTaille($this);
         }
 
         return $this;
     }
 
-    public function removeBoisson(Boisson $boisson): self
+    public function removeBoissonTaille(BoissonTaille $boissonTaille): self
     {
-        if ($this->boissons->removeElement($boisson)) {
-            $boisson->removeTaille($this);
+        if ($this->boissonTailles->removeElement($boissonTaille)) {
+            // set the owning side to null (unless already changed)
+            if ($boissonTaille->getTaille() === $this) {
+                $boissonTaille->setTaille(null);
+            }
         }
 
         return $this;

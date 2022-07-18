@@ -46,6 +46,7 @@ class UserDataPersister implements DataPersisterInterface
         }
         public function remove($data)
         {
+        // $data->setIsEtat(false);
         $this->entityManager->remove($data);
         $this->entityManager->flush();
         }
